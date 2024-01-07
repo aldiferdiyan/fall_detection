@@ -1,0 +1,70 @@
+version: '3.7'
+
+services:
+  # service
+  fd-service:
+    image: aldiferdiyan/fd-service:latest
+    container_name: fd-service
+    ports:
+      - '4002:4002'
+    restart: always
+    environment:
+      - STORAGE=/app/storage
+    depends_on:
+      - fd-mysql
+    networks:
+      - network
+    volumes:
+      - ./storage:/app/storage
+    logging:
+      options:
+        max-size: 50m
+
+
+  # client
+  fd-client:
+    image: aldiferdiyan/fd-client:latest
+    container_name: fd-client
+    ports:
+      - '3000:3000'
+    restart: always
+    depends_on:
+      - fd-service
+    networks:
+      - network
+    logging:
+      options:
+        max-size: 50m
+
+  # mysql
+  fd-mysql:
+    image: mysql:5.7
+    restart: always
+    container_name: fd-mysql
+    command: --sql_mode="" --max_allowed_packet=32505856 --max_connections=1000
+    env_file: .env
+    environment:
+      - MYSQL_DATABASE=app_fd
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=xtzKMAysha
+      - MYSQL_ROOT_PASSWORD=xtzKMAysha
+      - TZ=Asia/Jakarta
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - network
+
+    logging:
+      options:
+        max-size: 50m
+
+volumes:
+  mysql_data: 
+    name: fd-mysql-data
+
+networks:
+  network:
+    name: fd-network
+    external: true
